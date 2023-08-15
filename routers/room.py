@@ -59,23 +59,26 @@ def getMembers(user_list: str):
         ret.append(user)
     return ret
 
+def get_user_info(db: Session, user_id: str):
+    user = crud.get_user(db=db, stu_id=user_id)
+    if user:
+        return {"stu_id": user.stu_id, "user_name": user.user_name}
+    return {}
+
 # 通过房间号取得可以查看的信息
 def getRoomInfoById(roomId: str, db: Session = Depends(get_db)):
     room = crud.get_room_by_roomid(db=db, room_id=roomId)
     data = {}
-    try:
-        data['creatorId'] = crud.get_user(db=db, stu_id=room.creator_id).stu_id
-        data['creatorName'] = crud.get_user(db=db, stu_id=room.creator_id).user_name
-    except:
-        return { "code": 3, "msg": "房间对应用户出错", "data": data }
-    data['roomId'] = room.id
-    data['ownerId'] = room.creator_id
-    data['coverUrl'] = room.cover_url
-    data['videoUrl'] = room.video_url
-    data['roomName'] = room.name
-    data['roomPms'] = bool(room.pms)
-    data['roomDescription'] = room.description
-    data['members'] = getMembers(room.user_list)
+    creator_info = get_user_info(db, room.creator_id)
+    if creator_info:
+        data['roomId'] = room.id
+        data['ownerId'] = room.creator_id
+        data['coverUrl'] = room.cover_url
+        data['videoUrl'] = room.video_url
+        data['roomName'] = room.name
+        data['roomPms'] = bool(room.pms)
+        data['roomDescription'] = room.description
+        data['members'] = getMembers(room.user_list)
     return data
 
 # 创建房间
