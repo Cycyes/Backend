@@ -27,6 +27,10 @@ class CustomException(HTTPException):
     def __init__(self, status_code, detail):
         super().__init__(status_code=status_code, detail=detail)
 
+class CustomException(HTTPException):
+    def __init__(self, status_code, detail):
+        super().__init__(status_code=status_code, detail=detail)
+
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     try:
@@ -36,27 +40,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="用户不存在",
             )
-        if not verify_password(form_data.password, db_user.password):
-            raise CustomException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="密码错误",
-            )
-        
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": db_user.stu_id}, expires_delta=access_token_expires 
-        )
-        
-        data = {
-            'access_token': access_token,
-            'token_type': 'bearer'
-        }
-        
-        return {
-            "code": 0,
-            "msg": "登录成功",
-            "data": data
-        }
+        ...
     except SQLAlchemyError as e:
         raise CustomException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
