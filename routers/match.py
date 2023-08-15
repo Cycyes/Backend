@@ -51,8 +51,6 @@ async def queryMatch(db: Session = Depends(get_db), current_user: models.User = 
     else:
         return {"code": 0, "msg": "匹配失败", "data": data}
 
-
-
 # 结束匹配
 @router.post("/endMatch")
 async def endMatch(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
