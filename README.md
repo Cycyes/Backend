@@ -1,2 +1,1 @@
-# SoftwareEngineering-Backend
- TJ-Friends-Backend
+# backend
