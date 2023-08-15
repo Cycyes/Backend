@@ -26,6 +26,13 @@ class deleteMessageIn(BaseModel):
 class recallMessageIn(BaseModel):
     messageId: int
 
+def handle_exception(func):
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            return {"code": 1, "msg": "An error occurred: " + str(e), "data": {}}
+    return wrapper
 
 def get_to_messages_by_id(db, current_user):
     msgs = crud.get_all_messages_by_to_id(db=db, to_id=current_user.stu_id)
@@ -51,6 +58,7 @@ def get_conversion_messages(db, current_user, userId):
 
 
 @router.get("/chat/getMessageInfo")
+@handle_exception
 async def getLastMessage(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     msgs_dict = get_to_messages_by_id(db=db, current_user=current_user)
     data = []
@@ -80,6 +88,7 @@ async def getLastMessage(db: Session = Depends(get_db), current_user: models.Use
 
 
 @router.post("/chat/sendMessage")
+@handle_exception
 async def sendMessage(r: sendMessageIn, db: Session = Depends(get_db),
                       current_user: models.User = Depends(get_current_user)):
     t = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -89,6 +98,7 @@ async def sendMessage(r: sendMessageIn, db: Session = Depends(get_db),
 
 
 @router.get("/chat/receiveAllMessages")
+@handle_exception
 async def receiveAllMessages(userId: str, db: Session = Depends(get_db),
                              current_user: models.User = Depends(get_current_user)):
     msgs = get_conversion_messages(db=db, current_user=current_user, userId=userId)
@@ -121,6 +131,7 @@ async def receiveAllMessages(userId: str, db: Session = Depends(get_db),
 
 
 @router.post("/chat/deleteMessages")
+@handle_exception
 async def deleteMessages(r: userIdIn, db: Session = Depends(get_db),
                         current_user: models.User = Depends(get_current_user)):
     msgs = get_conversion_messages(db=db, current_user=current_user, userId=r.userId)
@@ -139,6 +150,7 @@ async def deleteMessages(r: userIdIn, db: Session = Depends(get_db),
 
 
 @router.post("/chat/readMessageInfo")
+@handle_exception
 async def readMessageInfo(r: userIdIn, db: Session = Depends(get_db),
                           current_user: models.User = Depends(get_current_user)):
     msgs = get_conversion_messages(db=db, current_user=current_user, userId=r.userId)
@@ -161,6 +173,7 @@ async def readMessageInfo(r: userIdIn, db: Session = Depends(get_db),
 
 
 @router.get("/chat/receiveUnreadMessages")
+@handle_exception
 async def receiveUnreadMessages(userId: str, db: Session = Depends(get_db),
                                 current_user: models.User = Depends(get_current_user)):
     msgs = get_conversion_messages(db=db, current_user=current_user, userId=userId)
@@ -192,6 +205,7 @@ async def receiveUnreadMessages(userId: str, db: Session = Depends(get_db),
 
 
 @router.post("/chat/deleteMessage")
+@handle_exception
 async def deleteMessage(r: deleteMessageIn, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     
     db_msg = crud.get_message_by_id(db=db, id=r.messageId) # 根据messageId从数据库获取msg
@@ -211,6 +225,7 @@ async def deleteMessage(r: deleteMessageIn, db: Session = Depends(get_db), curre
 
 
 @router.post("/chat/recallMessage")
+@handle_exception
 async def recallMessage(r: recallMessageIn, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
 
     db_msg = crud.get_message_by_id(db=db, id=r.messageId) # 根据messageId从数据库获取msg
@@ -224,5 +239,3 @@ async def recallMessage(r: recallMessageIn, db: Session = Depends(get_db), curre
         return {"code": 0, "msg": "撤回成功", "data":{}}
     else:
         return {"code": 1, "msg": "该消息非当前用户发出的消息", "data":{}}
-
-
